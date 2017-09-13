@@ -1,2 +1,2 @@
 # Linux-shellscripts
-Some scripts use in Linux
+Some scripts used in Linux
