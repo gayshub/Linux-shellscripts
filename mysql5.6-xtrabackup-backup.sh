@@ -1,4 +1,5 @@
 #!/bin/bash
+#base on mysql5.6.xx, you need to grant replication client, reload on your mysql server
 LOGFILE=/var/log/mysql_backup.log
 FSTAMP=`date +%F`
 ISTAMP=`date +%F-%H-%M-%S`
@@ -22,7 +23,7 @@ else
 	echo "========================End full backup @ $FSTAMP========================" >> $LOGFILE
 	#
 	echo "========================The first increment backup today @ $ISTAMP========================" >> $LOGFILE
-	$STAND -incremental $IBPATH/$ISTAMP --incremental-basedir=$FBPATH/$FSTAMP &>> $LOGFILE
+	$STAND --incremental $IBPATH/$ISTAMP --incremental-basedir=$FBPATH/$FSTAMP &>> $LOGFILE
 fi
 sleep 2
 #increment
@@ -31,5 +32,5 @@ echo " " >> $LOGFILE
 echo " " >> $LOGFILE
 echo "========================Start increment backup @ $ISTAMP========================" >> $LOGFILE
 LAST_DIR=`ls $IBPATH | sort -n | tail -1`
-$STAND -incremental $IBPATH/`date +%F-%H-%M-%S` --incremental-basedir=$IBPATH/$LAST_DIR &>> $LOGFILE
+$STAND --incremental $IBPATH/`date +%F-%H-%M-%S` --incremental-basedir=$IBPATH/$LAST_DIR &>> $LOGFILE
 echo "========================End increment backup @ $ISTAMP========================" >> $LOGFILE
