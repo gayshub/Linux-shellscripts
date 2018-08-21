@@ -1,0 +1,53 @@
+#!/bin/bash
+read -p "please input your name(eg: Zhang San): " NAME
+OK=($NAME)
+while [ "${#OK[@]}" -le 1 ];do
+	echo "argument error for not enough,please input again" 
+	unset OK
+	read -p "please input your name(eg: Zhang San): " NAME
+	OK=($NAME)
+done
+
+
+FirstName=`echo $NAME|awk '{print $NF}'`
+LastName=`echo $NAME|awk '{print $1}'`
+Maxuid=`ldapsearch -x |grep uidNumber|tail -n1|awk '{print $NF}'`
+#Curruid=`echo $Maxuid+1|bc`
+Curruid=`echo $(($Maxuid+1))`
+Mail=`echo $NAME|tr '[A-Z]' '[a-z]'|sed -e "s/ //"`
+
+if test -f c.ldif ;then echo "c.ldif is exist." && exit 1;fi
+cat >c.ldif <<EOF
+dn: uid=a$Curruid,ou=Beijing,ou=People,dc=xx,dc=net
+cn: $NAME
+gidnumber: 500
+givenname: $FirstName
+homedirectory: /home/a$Curruid
+loginshell: /bin/bash
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: $LastName
+uid: a$Curruid
+uidnumber: $Curruid
+mail: $Mail@xx.net
+EOF
+echo "the uid is automatic increase ,so not need to change."
+echo "###################overview####################"
+cat c.ldif
+
+echo "###############################################"
+read -p "are you sure?(y/n) " SURE
+case $SURE in
+y)
+	ldapadd -x -D "cn=admin,dc=xx,dc=net" -w PASSWORD -f c.ldif; [ $? -ne 0 ]&& exit 1
+	rm -f c.ldif
+;;
+n)
+	rm -f c.ldif && exit 1
+;;
+*)
+	echo "Command not implemented for that parameter."
+	rm -f c.ldif
+;;
+esac
